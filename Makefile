@@ -1,5 +1,6 @@
 NAME = lazyworktree
 MKDOCS = NO_MKDOCS_2_WARNING=1 uvx --with 'mkdocs<2' --with mkdocs-material --with pymdown-extensions --with mkdocs-glightbox mkdocs
+GO_PACKAGES = $(shell go list ./... | grep -v '^github.com/chmouel/lazyworktree/tmp$$')
 
 all: build
 
@@ -12,16 +13,16 @@ build: mkdir
 sanity: lint format test docs-sync
 
 lint:
-	golangci-lint run --fix ./...
+	golangci-lint run --fix $(GO_PACKAGES)
 
 format:
 	gofumpt -w .
 
 test:
-	go test ./...
+	go test $(GO_PACKAGES)
 
 coverage:
-	go test ./... -covermode=count -coverprofile=coverage.out
+	go test $(GO_PACKAGES) -covermode=count -coverprofile=coverage.out
 	go tool cover -func=coverage.out -o=coverage.out
 
 docs-build:
