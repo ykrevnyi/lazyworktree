@@ -50,7 +50,7 @@ Useful entry points:
 - CLI overview: <https://chmouel.github.io/lazyworktree/docs/cli/overview/>
 - CLI flags reference: <https://chmouel.github.io/lazyworktree/docs/cli/flags/>
 - CLI commands reference: <https://chmouel.github.io/lazyworktree/docs/cli/commands/>
-- Troubleshooting: <https://chmouel.github.io/lazyworktree/docs/troubleshooting/common-problems/>
+- Troubleshooting: <https://chmouel.github.io/lazyworktree/docs/troubleshooting/diagnostic-guide/>
 
 ## Installation
 
