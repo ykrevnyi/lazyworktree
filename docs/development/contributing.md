@@ -8,7 +8,7 @@ Thank you for considering a contribution to LazyWorktree. This guide covers the 
 
 ## Prerequisites
 
-- **Go** 1.22 or later
+- **Go** 1.25 or later
 - **git** (used at runtime as well as for development)
 - **uv** — Python tooling for documentation (`brew install uv` on macOS)
 - **golangci-lint** — linting (`brew install golangci-lint` or see [installation docs](https://golangci-lint.run/usage/install/))
@@ -54,11 +54,12 @@ your working tree.
 | Lint | `make lint` | Run `golangci-lint` |
 | Format | `make format` | Apply `gofumpt` formatting |
 | Test | `make test` | Run all Go tests |
-| Coverage | `make coverage` | Generate HTML coverage report |
+| Coverage | `make coverage` | Write a per-function coverage summary to `coverage.out` |
 
 ### Test Coverage
 
-The project targets 55 %+ coverage, focused on critical paths (git operations, configuration loading, key handlers). Run a coverage report with:
+The project targets 55 %+ coverage, focused on critical paths (git operations,
+configuration loading, key handlers). Run a coverage summary with:
 
 ```bash
 make coverage
