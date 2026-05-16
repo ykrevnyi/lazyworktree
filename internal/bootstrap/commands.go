@@ -1534,7 +1534,7 @@ func handleExecAction(ctx context.Context, cmd *appiCli.Command) error {
 			return err
 		}
 		for _, wt := range worktrees {
-			if strings.HasPrefix(cwd, wt.Path) {
+			if utils.PathContains(wt.Path, cwd) {
 				targetWorktree = wt
 				break
 			}

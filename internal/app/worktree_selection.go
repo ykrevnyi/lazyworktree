@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/chmouel/lazyworktree/internal/models"
+	"github.com/chmouel/lazyworktree/internal/utils"
 )
 
 // determineCurrentWorktree finds the worktree that matches the current working directory.
@@ -15,7 +16,7 @@ func (m *Model) determineCurrentWorktree() *models.WorktreeInfo {
 
 	if cwd, err := os.Getwd(); err == nil {
 		for _, wt := range m.state.data.worktrees {
-			if strings.HasPrefix(cwd, wt.Path) {
+			if utils.PathContains(wt.Path, cwd) {
 				return wt
 			}
 		}

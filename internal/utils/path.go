@@ -17,3 +17,19 @@ func ExpandPath(path string) (string, error) {
 	}
 	return os.ExpandEnv(path), nil
 }
+
+// PathContains reports whether child is equal to parent or nested beneath it.
+func PathContains(parent, child string) bool {
+	if parent == "" || child == "" {
+		return false
+	}
+
+	parent = filepath.Clean(parent)
+	child = filepath.Clean(child)
+
+	if parent == child {
+		return true
+	}
+
+	return strings.HasPrefix(child, parent+string(filepath.Separator))
+}

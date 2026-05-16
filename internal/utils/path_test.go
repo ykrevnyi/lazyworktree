@@ -69,3 +69,27 @@ func TestExpandPath(t *testing.T) {
 		})
 	}
 }
+
+func TestPathContains(t *testing.T) {
+	tests := []struct {
+		name   string
+		parent string
+		child  string
+		want   bool
+	}{
+		{name: "exact match", parent: "/tmp/repo/feature", child: "/tmp/repo/feature", want: true},
+		{name: "nested path", parent: "/tmp/repo/feature", child: "/tmp/repo/feature/src/pkg", want: true},
+		{name: "sibling prefix does not match", parent: "/tmp/repo/feature", child: "/tmp/repo/feature-2", want: false},
+		{name: "missing parent", parent: "", child: "/tmp/repo/feature", want: false},
+		{name: "missing child", parent: "/tmp/repo/feature", child: "", want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := PathContains(tt.parent, tt.child)
+			if got != tt.want {
+				t.Fatalf("expected %t, got %t", tt.want, got)
+			}
+		})
+	}
+}
