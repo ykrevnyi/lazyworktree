@@ -201,6 +201,37 @@ func TestRenderAgentSessionCardShowsApprovalBadge(t *testing.T) {
 	}
 }
 
+func TestAgentSessionsForSelectedWorktreeIncludesSuspectByDefault(t *testing.T) {
+	cfg := &config.AppConfig{WorktreeDir: t.TempDir()}
+	m := NewModel(cfg, "")
+
+	worktreePath := filepath.Join(t.TempDir(), "repo", "feature")
+	m.state.data.filteredWts = []*models.WorktreeInfo{{Path: worktreePath, Branch: "feature"}}
+	m.state.data.selectedIndex = 0
+	m.state.ui.agentSessionsViewport.SetWidth(92)
+
+	suspect := &models.AgentSession{
+		ID:             "claude-suspect",
+		Agent:          models.AgentKindClaude,
+		DisplayName:    "Authoring",
+		CWD:            worktreePath,
+		Title:          "editing internal/app/app_agents.go",
+		LastActivity:   time.Now(),
+		Activity:       models.AgentActivityWriting,
+		LivenessState:  models.AgentSessionLivenessSuspect,
+		LivenessSource: models.AgentSessionLivenessSourceCWDHeuristic,
+		OpenConfidence: models.AgentOpenConfidenceCWD,
+	}
+
+	m.state.view.ShowAllAgentSessions = false
+	visible := []*models.AgentSession{suspect}
+	content := m.buildAgentSessionsContent(visible)
+	plain := ansi.Strip(content)
+	if !strings.Contains(plain, "CWD") {
+		t.Fatalf("expected suspect session badge to render by default, got %q", plain)
+	}
+}
+
 func TestRenderAgentSessionMarkerUsesNerdFontGlyphForClaude(t *testing.T) {
 	cfg := &config.AppConfig{WorktreeDir: t.TempDir(), IconSet: "nerd-font-v3"}
 	m := NewModel(cfg, "")

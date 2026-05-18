@@ -111,7 +111,11 @@ func (m *Model) agentSessionsForSelectedWorktree() []*models.AgentSession {
 	}
 	visible := make([]*models.AgentSession, 0, len(sessions))
 	for _, session := range sessions {
-		if session != nil && session.IsOpen {
+		if session == nil {
+			continue
+		}
+		switch session.LivenessState {
+		case models.AgentSessionLivenessActive, models.AgentSessionLivenessSuspect:
 			visible = append(visible, session)
 		}
 	}
@@ -230,7 +234,8 @@ func (m *Model) renderAgentSessionCard(session *models.AgentSession, width int, 
 	}
 	line1 = prefixStyle.Render(prefix) + line1
 
-	if !session.IsOpen {
+	if session.LivenessState != models.AgentSessionLivenessActive &&
+		session.LivenessState != models.AgentSessionLivenessSuspect {
 		return []string{m.mutedPaneStyle().Width(width).Render(line1)}
 	}
 	return []string{line1}
@@ -257,10 +262,11 @@ func (m *Model) renderAgentSessionRight(session *models.AgentSession) string {
 		return ""
 	}
 	styles := m.agentRenderStyles()
-	parts := []string{
-		m.renderAgentSessionActivityBadge(session),
-		styles.muted.Render(formatRelativeTime(session.LastActivity)),
+	parts := []string{m.renderAgentSessionActivityBadge(session)}
+	if badge := m.renderAgentSessionLivenessBadge(session); badge != "" {
+		parts = append(parts, badge)
 	}
+	parts = append(parts, styles.muted.Render(formatRelativeTime(session.LastActivity)))
 	return strings.Join(parts, " ")
 }
 
@@ -297,11 +303,48 @@ func (m *Model) renderAgentSessionBadge(label string, bg, fg color.Color) string
 	return badgeStyle.Render(strings.ToUpper(label))
 }
 
+func (m *Model) renderAgentSessionLivenessBadge(session *models.AgentSession) string {
+	if session == nil {
+		return ""
+	}
+	label := string(session.LivenessState)
+	if label == "" {
+		return ""
+	}
+	var bg, fg color.Color
+	switch session.LivenessState {
+	case models.AgentSessionLivenessActive:
+		bg = m.theme.SuccessFg
+		fg = m.theme.AccentFg
+		switch session.LivenessSource {
+		case models.AgentSessionLivenessSourceExactFile:
+			label = "exact"
+		case models.AgentSessionLivenessSourceNative:
+			label = "native"
+		}
+	case models.AgentSessionLivenessRecent:
+		bg = m.theme.Cyan
+		fg = m.theme.AccentFg
+	case models.AgentSessionLivenessSuspect:
+		bg = m.theme.WarnFg
+		fg = m.theme.AccentFg
+		if session.LivenessSource == models.AgentSessionLivenessSourceCWDHeuristic {
+			label = "cwd"
+		}
+	default:
+		bg = m.theme.BorderDim
+		fg = m.theme.TextFg
+	}
+	return m.renderAgentSessionBadge(label, bg, fg)
+}
+
 func (m *Model) agentSessionTitle(session *models.AgentSession) string {
 	if session == nil {
 		return ""
 	}
-
+	if strings.TrimSpace(session.Title) != "" {
+		return session.Title
+	}
 	if strings.TrimSpace(session.TaskLabel) != "" {
 		return session.TaskLabel
 	}

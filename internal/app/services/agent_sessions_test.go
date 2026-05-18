@@ -163,6 +163,21 @@ func TestParsePiSession(t *testing.T) {
 	}
 }
 
+func TestNewAgentSessionServiceWithStorePreservesExplicitEmptyRoots(t *testing.T) {
+	t.Parallel()
+
+	service := NewAgentSessionServiceWithStore("", "", NewTestSessionRegistryStore(filepath.Join(t.TempDir(), "registry.json")), nil)
+	if service.claudeRoot != "" {
+		t.Fatalf("expected explicit empty Claude root to stay empty, got %q", service.claudeRoot)
+	}
+	if service.piRoot != "" {
+		t.Fatalf("expected explicit empty pi root to stay empty, got %q", service.piRoot)
+	}
+	if roots := service.WatchRoots(); len(roots) != 0 {
+		t.Fatalf("expected no watch roots when explicit roots are empty, got %#v", roots)
+	}
+}
+
 func TestAgentSessionServiceSessionsForWorktree(t *testing.T) {
 	t.Parallel()
 
@@ -197,7 +212,7 @@ func TestAgentSessionServiceSessionsForWorktree(t *testing.T) {
 		}),
 	)
 
-	service := NewAgentSessionServiceWithRoots(claudeRoot, piRoot, nil)
+	service := NewAgentSessionServiceWithStore(claudeRoot, piRoot, NewTestSessionRegistryStore(filepath.Join(root, "registry.json")), nil)
 	if _, err := service.Refresh(); err != nil {
 		t.Fatalf("Refresh returned error: %v", err)
 	}
@@ -236,7 +251,7 @@ func TestAgentSessionServiceRefreshInvalidatesCache(t *testing.T) {
 		}),
 	)
 
-	service := NewAgentSessionServiceWithRoots(claudeRoot, "", nil)
+	service := NewAgentSessionServiceWithStore(claudeRoot, "", NewTestSessionRegistryStore(filepath.Join(root, "registry.json")), nil)
 	first, err := service.Refresh()
 	if err != nil {
 		t.Fatalf("first Refresh returned error: %v", err)
@@ -328,7 +343,7 @@ func TestAgentSessionServiceRefreshFindsNestedClaudeJSONL(t *testing.T) {
 		}),
 	)
 
-	service := NewAgentSessionServiceWithRoots(claudeRoot, "", nil)
+	service := NewAgentSessionServiceWithStore(claudeRoot, "", NewTestSessionRegistryStore(filepath.Join(root, "registry.json")), nil)
 	sessions, err := service.Refresh()
 	if err != nil {
 		t.Fatalf("Refresh returned error: %v", err)

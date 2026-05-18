@@ -83,9 +83,9 @@ func NewHelpScreen(maxWidth, maxHeight int, customCommands config.CustomCommands
 - j / k: Move between matching Claude / pi sessions
 - Ctrl+D / Ctrl+U: Half page down / up
 - g / G: Jump to top / bottom
-- A: Toggle between open sessions only and all matching sessions
+- A: Toggle between active sessions only and all matching sessions
 - 6: Focus agent sessions pane (or toggle zoom if already focused)
-- When no live session is open, pressing 6 reveals historical matching sessions
+- When no active session is open, pressing 6 reveals recent and historical matching sessions
 - Tab includes pane 6 at the end of the cycle when visible
 
 **{{HELP_CI_CHECKS}}Git Status Pane (when focused)**

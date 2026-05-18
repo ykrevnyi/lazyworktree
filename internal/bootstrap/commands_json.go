@@ -74,6 +74,8 @@ type agentSessionJSON struct {
 	Agent        string `json:"agent"`
 	Status       string `json:"status"`
 	Activity     string `json:"activity"`
+	Liveness     string `json:"liveness,omitempty"`
+	Source       string `json:"source,omitempty"`
 	IsOpen       bool   `json:"is_open"`
 	LastActivity string `json:"last_activity,omitempty"`
 	TaskLabel    string `json:"task_label,omitempty"`

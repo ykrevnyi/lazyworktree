@@ -432,7 +432,8 @@ func handleWorktreesContextAction(ctx context.Context, cmd *appiCli.Command) err
 	}
 	if len(payload.AgentSessions) > 0 {
 		fmt.Fprintln(os.Stdout, "\nAgent sessions:")
-		for _, session := range payload.AgentSessions {
+		for i := range payload.AgentSessions {
+			session := &payload.AgentSessions[i]
 			fmt.Fprintf(os.Stdout, "- %s %s %s\n", session.Agent, session.Status, session.TaskLabel)
 		}
 	}
@@ -682,6 +683,8 @@ func buildAgentSessionJSONs(agentSvc *services.AgentSessionService, wtPath strin
 			Agent:        string(session.Agent),
 			Status:       string(session.Status),
 			Activity:     string(session.Activity),
+			Liveness:     string(session.LivenessState),
+			Source:       string(session.LivenessSource),
 			IsOpen:       session.IsOpen,
 			LastActivity: session.LastActivity.Format("2006-01-02T15:04:05Z07:00"),
 			TaskLabel:    session.TaskLabel,

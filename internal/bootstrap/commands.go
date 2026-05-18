@@ -1048,6 +1048,8 @@ func outputListJSON(ctx context.Context, gitSvc *git.Service, cfg *config.AppCon
 					Agent:        string(s.Agent),
 					Status:       string(s.Status),
 					Activity:     string(s.Activity),
+					Liveness:     string(s.LivenessState),
+					Source:       string(s.LivenessSource),
 					IsOpen:       s.IsOpen,
 					LastActivity: s.LastActivity.Format("2006-01-02T15:04:05Z07:00"),
 					TaskLabel:    s.TaskLabel,

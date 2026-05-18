@@ -69,6 +69,8 @@ lazyworktree list --json | jq '.[].agent_count'
 lazyworktree note show --json | jq '{note, description, tags}'
 ```
 
+When agent session data is present, each session includes `liveness` and `source` fields so automation can distinguish confirmed active sessions from recent or heuristic matches.
+
 ### 5. Use `exec --json` for command automation
 
 ```bash

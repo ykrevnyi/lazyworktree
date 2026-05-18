@@ -32,7 +32,12 @@ func seedClaudeAgentSession(t *testing.T, m *Model, worktreePath string, open bo
 func seedClaudeAgentSessions(t *testing.T, m *Model, worktreePath string, openStates []bool) {
 	t.Helper()
 	root := t.TempDir()
-	m.state.services.agentSessions = services.NewAgentSessionServiceWithRoots(root, "", nil)
+	m.state.services.agentSessions = services.NewAgentSessionServiceWithStore(
+		root,
+		"",
+		services.NewTestSessionRegistryStore(filepath.Join(root, "registry.json")),
+		nil,
+	)
 
 	processes := make([]*services.AgentProcess, 0, len(openStates))
 	for i, open := range openStates {

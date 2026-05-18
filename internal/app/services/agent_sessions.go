@@ -17,11 +17,53 @@ import (
 const (
 	agentActivityTimeout = 30 * time.Second
 	agentWaitingTimeout  = 2 * time.Minute
+	claudeSessionSchema  = "claude-jsonl-v1"
+	piSessionSchema      = "pi-jsonl-v1"
 )
 
 type agentSessionCacheEntry struct {
 	mtime   time.Time
 	session *models.AgentSession
+}
+
+// AgentAdapter abstracts per-agent transcript discovery so new agent types can be added without changing core logic.
+type AgentAdapter interface {
+	Name() string
+	WatchRoot() string
+	Discover(
+		seen map[string]struct{},
+		cached func(path string, parse func() (*models.AgentSession, error)) (*models.AgentSession, error),
+	) ([]*models.AgentSession, error)
+}
+
+type transcriptAgentAdapter struct {
+	name  string
+	root  string
+	parse func(path, encodedDir string) (*models.AgentSession, error)
+}
+
+func (a *transcriptAgentAdapter) Name() string {
+	if a == nil {
+		return ""
+	}
+	return a.name
+}
+
+func (a *transcriptAgentAdapter) WatchRoot() string {
+	if a == nil {
+		return ""
+	}
+	return a.root
+}
+
+func (a *transcriptAgentAdapter) Discover(
+	seen map[string]struct{},
+	cached func(path string, parse func() (*models.AgentSession, error)) (*models.AgentSession, error),
+) ([]*models.AgentSession, error) {
+	if a == nil {
+		return nil, nil
+	}
+	return discoverSessionsFromDir(a.root, seen, a.parse, cached)
 }
 
 // AgentSessionService discovers Claude and pi transcript sessions from disk.
@@ -31,12 +73,14 @@ type AgentSessionService struct {
 	sessions   []*models.AgentSession
 	claudeRoot string
 	piRoot     string
+	adapters   []AgentAdapter
+	store      SessionRegistryStore
 	logf       func(string, ...any)
 }
 
 // NewAgentSessionService builds a service using the default agent transcript locations.
 func NewAgentSessionService(logf func(string, ...any)) *AgentSessionService {
-	return NewAgentSessionServiceWithRoots(claudeProjectsDir(), piSessionsDir(), logf)
+	return NewAgentSessionServiceWithStore(claudeProjectsDir(), piSessionsDir(), newFileSessionRegistryStore(), logf)
 }
 
 // NewAgentSessionServiceFromConfig builds a service using config values when non-empty,
@@ -48,27 +92,41 @@ func NewAgentSessionServiceFromConfig(claudeRoot, piRoot string, logf func(strin
 	if piRoot == "" {
 		piRoot = piSessionsDir()
 	}
-	return NewAgentSessionServiceWithRoots(claudeRoot, piRoot, logf)
+	return NewAgentSessionServiceWithStore(claudeRoot, piRoot, newFileSessionRegistryStore(), logf)
 }
 
 // NewAgentSessionServiceWithRoots builds a service with explicit roots for tests.
 func NewAgentSessionServiceWithRoots(claudeRoot, piRoot string, logf func(string, ...any)) *AgentSessionService {
+	return NewAgentSessionServiceWithStore(claudeRoot, piRoot, newFileSessionRegistryStore(), logf)
+}
+
+// NewAgentSessionServiceWithStore builds a service with explicit roots and registry storage.
+func NewAgentSessionServiceWithStore(claudeRoot, piRoot string, store SessionRegistryStore, logf func(string, ...any)) *AgentSessionService {
 	return &AgentSessionService{
 		cache:      make(map[string]agentSessionCacheEntry),
 		claudeRoot: claudeRoot,
 		piRoot:     piRoot,
-		logf:       logf,
+		adapters: []AgentAdapter{
+			&transcriptAgentAdapter{name: "claude", root: claudeRoot, parse: parseClaudeSession},
+			&transcriptAgentAdapter{name: "pi", root: piRoot, parse: parsePiSession},
+		},
+		store: store,
+		logf:  logf,
 	}
 }
 
 // WatchRoots returns the directories that should be watched for transcript changes.
 func (s *AgentSessionService) WatchRoots() []string {
 	roots := make([]string, 0, 2)
-	if s.claudeRoot != "" {
-		roots = append(roots, s.claudeRoot)
-	}
-	if s.piRoot != "" {
-		roots = append(roots, s.piRoot)
+	for _, adapter := range s.adapters {
+		if adapter == nil {
+			continue
+		}
+		root := strings.TrimSpace(adapter.WatchRoot())
+		if root == "" {
+			continue
+		}
+		roots = append(roots, root)
 	}
 	return roots
 }
@@ -80,24 +138,41 @@ func (s *AgentSessionService) Refresh() ([]*models.AgentSession, error) {
 
 // RefreshWithProcesses re-discovers transcript sessions and enriches them with live-process matches.
 func (s *AgentSessionService) RefreshWithProcesses(processes []*AgentProcess) ([]*models.AgentSession, error) {
-	seen := make(map[string]struct{})
-	sessions := make([]*models.AgentSession, 0, 16)
-
-	if claudeSessions, err := s.discoverClaudeSessions(seen); err == nil {
-		sessions = append(sessions, claudeSessions...)
-	} else if s.logf != nil {
-		s.logf("agent sessions: Claude discovery failed: %v", err)
+	previous := map[string]*models.AgentSession{}
+	if s.store != nil {
+		loaded, err := s.store.Load()
+		if err != nil {
+			if s.logf != nil {
+				s.logf("agent sessions: registry load failed: %v", err)
+			}
+		} else {
+			previous = loaded
+		}
 	}
 
-	if piSessions, err := s.discoverPiSessions(seen); err == nil {
-		sessions = append(sessions, piSessions...)
-	} else if s.logf != nil {
-		s.logf("agent sessions: pi discovery failed: %v", err)
+	seen := make(map[string]struct{})
+	sessions := make([]*models.AgentSession, 0, 16)
+	for _, adapter := range s.adapters {
+		if adapter == nil {
+			continue
+		}
+		discovered, err := adapter.Discover(seen, s.cachedSession)
+		if err != nil {
+			if s.logf != nil {
+				s.logf("agent sessions: %s discovery failed: %v", adapter.Name(), err)
+			}
+			continue
+		}
+		sessions = append(sessions, discovered...)
 	}
 
 	s.pruneCache(seen)
-	sessions = matchAgentProcessesToSessions(sessions, processes)
+	sessions = s.mergeWithRegistryFallbacks(sessions, previous, seen)
+	sessions = s.classifySessionLiveness(sessions, processes, previous, time.Now())
 	sort.Slice(sessions, func(i, j int) bool {
+		if agentLivenessRank(sessions[i].LivenessState) != agentLivenessRank(sessions[j].LivenessState) {
+			return agentLivenessRank(sessions[i].LivenessState) > agentLivenessRank(sessions[j].LivenessState)
+		}
 		if sessions[i].IsOpen != sessions[j].IsOpen {
 			return sessions[i].IsOpen
 		}
@@ -109,6 +184,11 @@ func (s *AgentSessionService) RefreshWithProcesses(processes []*AgentProcess) ([
 		}
 		return sessions[i].LastActivity.After(sessions[j].LastActivity)
 	})
+	if s.store != nil {
+		if err := s.store.Save(sessions); err != nil && s.logf != nil {
+			s.logf("agent sessions: registry save failed: %v", err)
+		}
+	}
 
 	s.mu.Lock()
 	s.sessions = sessions
@@ -150,10 +230,11 @@ func (s *AgentSessionService) SessionsForWorktree(worktreePath string) []*models
 	return matching
 }
 
-func (s *AgentSessionService) discoverSessionsFromDir(
+func discoverSessionsFromDir(
 	root string,
 	seen map[string]struct{},
 	parse func(path, encodedDir string) (*models.AgentSession, error),
+	cached func(path string, parse func() (*models.AgentSession, error)) (*models.AgentSession, error),
 ) ([]*models.AgentSession, error) {
 	if root == "" {
 		return nil, nil
@@ -176,7 +257,7 @@ func (s *AgentSessionService) discoverSessionsFromDir(
 				return nil
 			}
 			seen[path] = struct{}{}
-			session, err := s.cachedSession(path, func() (*models.AgentSession, error) {
+			session, err := cached(path, func() (*models.AgentSession, error) {
 				return parse(path, entry.Name())
 			})
 			if err == nil && session != nil {
@@ -186,14 +267,6 @@ func (s *AgentSessionService) discoverSessionsFromDir(
 		})
 	}
 	return sessions, nil
-}
-
-func (s *AgentSessionService) discoverClaudeSessions(seen map[string]struct{}) ([]*models.AgentSession, error) {
-	return s.discoverSessionsFromDir(s.claudeRoot, seen, parseClaudeSession)
-}
-
-func (s *AgentSessionService) discoverPiSessions(seen map[string]struct{}) ([]*models.AgentSession, error) {
-	return s.discoverSessionsFromDir(s.piRoot, seen, parsePiSession)
 }
 
 func (s *AgentSessionService) cachedSession(path string, parse func() (*models.AgentSession, error)) (*models.AgentSession, error) {
@@ -333,10 +406,11 @@ func parseClaudeSession(path, encodedDir string) (*models.AgentSession, error) {
 	}
 
 	session := &models.AgentSession{
-		ID:           strings.TrimSuffix(filepath.Base(path), ".jsonl"),
-		Agent:        models.AgentKindClaude,
-		JSONLPath:    path,
-		LastActivity: info.ModTime(),
+		ID:            strings.TrimSuffix(filepath.Base(path), ".jsonl"),
+		Agent:         models.AgentKindClaude,
+		JSONLPath:     path,
+		LastActivity:  info.ModTime(),
+		SchemaVersion: claudeSessionSchema,
 	}
 
 	scanner := bufio.NewScanner(f)
@@ -489,6 +563,9 @@ func parseClaudeSession(path, encodedDir string) (*models.AgentSession, error) {
 		applyAgentStatus(session, role, hasToolUse, toolName, isToolResult)
 	}
 	session.TaskLabel = deriveAgentTaskLabel(session)
+	session.Title = deriveAgentSessionTitle(session)
+	session.SessionKey = agentSessionKey(session)
+	session.ResumeHint = session.JSONLPath
 	return session, nil
 }
 
@@ -632,10 +709,11 @@ func parsePiSession(path, encodedDir string) (*models.AgentSession, error) {
 	}
 
 	session := &models.AgentSession{
-		ID:           strings.TrimSuffix(filepath.Base(path), ".jsonl"),
-		Agent:        models.AgentKindPi,
-		JSONLPath:    path,
-		LastActivity: info.ModTime(),
+		ID:            strings.TrimSuffix(filepath.Base(path), ".jsonl"),
+		Agent:         models.AgentKindPi,
+		JSONLPath:     path,
+		LastActivity:  info.ModTime(),
+		SchemaVersion: piSessionSchema,
 	}
 
 	scanner := bufio.NewScanner(f)
@@ -729,6 +807,9 @@ func parsePiSession(path, encodedDir string) (*models.AgentSession, error) {
 	}
 	applyAgentStatus(session, role, hasToolUse, toolName, isToolResult)
 	session.TaskLabel = deriveAgentTaskLabel(session)
+	session.Title = deriveAgentSessionTitle(session)
+	session.SessionKey = agentSessionKey(session)
+	session.ResumeHint = session.JSONLPath
 	return session, nil
 }
 
@@ -1035,33 +1116,99 @@ func cloneAgentSession(in *models.AgentSession) *models.AgentSession {
 	return &copied
 }
 
-func agentOpenConfidenceRank(confidence models.AgentOpenConfidence) int {
-	switch confidence {
-	case models.AgentOpenConfidenceExact:
-		return 2
-	case models.AgentOpenConfidenceCWD:
-		return 1
-	default:
-		return 0
+func (s *AgentSessionService) mergeWithRegistryFallbacks(
+	observed []*models.AgentSession,
+	previous map[string]*models.AgentSession,
+	seen map[string]struct{},
+) []*models.AgentSession {
+	if len(previous) == 0 {
+		return observed
 	}
+
+	merged := cloneAgentSessions(observed)
+	byPath := make(map[string]struct{}, len(merged))
+	for _, session := range merged {
+		if session == nil {
+			continue
+		}
+		if session.SessionKey == "" {
+			session.SessionKey = agentSessionKey(session)
+		}
+		session.Title = deriveAgentSessionTitle(session)
+		session.ResumeHint = session.JSONLPath
+		if prev := previous[session.SessionKey]; prev != nil {
+			if session.LastObservedAt.IsZero() {
+				session.LastObservedAt = prev.LastObservedAt
+			}
+			if session.LastObservedAt.Before(prev.LastObservedAt) {
+				session.LastObservedAt = prev.LastObservedAt
+			}
+		}
+		if strings.TrimSpace(session.JSONLPath) != "" {
+			byPath[filepath.Clean(session.JSONLPath)] = struct{}{}
+		}
+	}
+
+	for _, session := range previous {
+		if session == nil || strings.TrimSpace(session.JSONLPath) == "" {
+			continue
+		}
+		cleanPath := filepath.Clean(session.JSONLPath)
+		if _, ok := seen[cleanPath]; !ok {
+			continue
+		}
+		if _, ok := byPath[cleanPath]; ok {
+			continue
+		}
+		fallback := cloneAgentSession(session)
+		fallback.SessionKey = agentSessionKey(fallback)
+		fallback.Title = deriveAgentSessionTitle(fallback)
+		if strings.TrimSpace(fallback.ResumeHint) == "" {
+			fallback.ResumeHint = fallback.JSONLPath
+		}
+		merged = append(merged, fallback)
+	}
+	return merged
 }
 
-func matchAgentProcessesToSessions(sessions []*models.AgentSession, processes []*AgentProcess) []*models.AgentSession {
+func (s *AgentSessionService) classifySessionLiveness(
+	sessions []*models.AgentSession,
+	processes []*AgentProcess,
+	previous map[string]*models.AgentSession,
+	now time.Time,
+) []*models.AgentSession {
 	matched := cloneAgentSessions(sessions)
-	if len(matched) == 0 {
-		return nil
-	}
 	for _, session := range matched {
+		if session == nil {
+			continue
+		}
+		if session.SessionKey == "" {
+			session.SessionKey = agentSessionKey(session)
+		}
+		if session.Title == "" {
+			session.Title = deriveAgentSessionTitle(session)
+		}
+		if strings.TrimSpace(session.ResumeHint) == "" {
+			session.ResumeHint = session.JSONLPath
+		}
+		if prev := previous[session.SessionKey]; prev != nil && session.LastObservedAt.Before(prev.LastObservedAt) {
+			session.LastObservedAt = prev.LastObservedAt
+		}
+		if session.LastObservedAt.Before(session.LastActivity) {
+			session.LastObservedAt = session.LastActivity
+		}
 		session.IsOpen = false
 		session.OpenConfidence = models.AgentOpenConfidenceNone
+		session.LivenessState = models.AgentSessionLivenessInactive
+		session.LivenessSource = models.AgentSessionLivenessSourceNone
 	}
-	if len(processes) == 0 {
-		return matched
+	if len(matched) == 0 {
+		return nil
 	}
 
 	processes = cloneAgentProcesses(processes)
 	usedProcess := make(map[int]struct{}, len(processes))
-	usedSession := make(map[string]struct{}, len(matched))
+	exactMatched := make(map[string]struct{}, len(matched))
 
 	for _, process := range processes {
 		if process == nil {
@@ -1076,8 +1223,11 @@ func matchAgentProcessesToSessions(sessions []*models.AgentSession, processes []
 			}
 			session.IsOpen = true
 			session.OpenConfidence = models.AgentOpenConfidenceExact
+			session.LivenessState = models.AgentSessionLivenessActive
+			session.LivenessSource = models.AgentSessionLivenessSourceExactFile
+			session.LastObservedAt = now
 			usedProcess[process.PID] = struct{}{}
-			usedSession[session.ID] = struct{}{}
+			exactMatched[session.SessionKey] = struct{}{}
 			break
 		}
 	}
@@ -1092,39 +1242,67 @@ func matchAgentProcessesToSessions(sessions []*models.AgentSession, processes []
 		bestIndex := -1
 		bestScore := 0
 		for i, session := range matched {
-			if session == nil || session.Agent != process.Agent || session.ID == "" {
+			if session == nil || session.Agent != process.Agent {
 				continue
 			}
-			if _, ok := usedSession[session.ID]; ok {
+			if _, ok := exactMatched[session.SessionKey]; ok {
 				continue
 			}
 			score := agentSessionCWDMatchScore(process.CWD, session.CWD)
 			if score == 0 {
 				continue
 			}
-			if bestIndex == -1 || score > bestScore || (score == bestScore && session.LastActivity.After(matched[bestIndex].LastActivity)) {
+			if bestIndex == -1 ||
+				score > bestScore ||
+				(score == bestScore && sessionObservationTime(session).After(sessionObservationTime(matched[bestIndex]))) ||
+				(score == bestScore && sessionObservationTime(session).Equal(sessionObservationTime(matched[bestIndex])) &&
+					session.LastActivity.After(matched[bestIndex].LastActivity)) {
 				bestIndex = i
 				bestScore = score
 			}
 		}
 		if bestIndex >= 0 {
-			matched[bestIndex].IsOpen = true
-			matched[bestIndex].OpenConfidence = models.AgentOpenConfidenceCWD
-			usedSession[matched[bestIndex].ID] = struct{}{}
+			candidate := matched[bestIndex]
+			candidate.LivenessState = models.AgentSessionLivenessSuspect
+			candidate.LivenessSource = models.AgentSessionLivenessSourceCWDHeuristic
+			candidate.OpenConfidence = models.AgentOpenConfidenceCWD
+			candidate.LastObservedAt = now
+			usedProcess[process.PID] = struct{}{}
 		}
 	}
 
-	now := time.Now()
 	for _, session := range matched {
 		if session == nil {
 			continue
+		}
+		if session.LivenessState == models.AgentSessionLivenessActive || session.LivenessState == models.AgentSessionLivenessSuspect {
+			session.Activity = resolveAgentActivity(
+				session.LastSummaryAt,
+				session.LastToolAt,
+				session.LastToolName,
+				session.CurrentTool,
+				session.IsOpen,
+				session.Status,
+				session.LastActivity,
+				now,
+			)
+			continue
+		}
+
+		observation := sessionObservationTime(session)
+		if !observation.IsZero() && now.Sub(observation) <= agentRecentThreshold {
+			session.LivenessState = models.AgentSessionLivenessRecent
+			session.LivenessSource = models.AgentSessionLivenessSourceRegistry
+		} else {
+			session.LivenessState = models.AgentSessionLivenessInactive
+			session.LivenessSource = models.AgentSessionLivenessSourceNone
 		}
 		session.Activity = resolveAgentActivity(
 			session.LastSummaryAt,
 			session.LastToolAt,
 			session.LastToolName,
 			session.CurrentTool,
-			session.IsOpen,
+			false,
 			session.Status,
 			session.LastActivity,
 			now,
@@ -1132,6 +1310,37 @@ func matchAgentProcessesToSessions(sessions []*models.AgentSession, processes []
 	}
 
 	return matched
+}
+
+func agentLivenessRank(state models.AgentSessionLiveness) int {
+	switch state {
+	case models.AgentSessionLivenessActive:
+		return 4
+	case models.AgentSessionLivenessRecent:
+		return 3
+	case models.AgentSessionLivenessSuspect:
+		return 2
+	case models.AgentSessionLivenessInactive:
+		return 1
+	default:
+		return 0
+	}
+}
+
+func agentOpenConfidenceRank(confidence models.AgentOpenConfidence) int {
+	switch confidence {
+	case models.AgentOpenConfidenceExact:
+		return 2
+	case models.AgentOpenConfidenceCWD:
+		return 1
+	default:
+		return 0
+	}
+}
+
+func matchAgentProcessesToSessions(sessions []*models.AgentSession, processes []*AgentProcess) []*models.AgentSession {
+	service := &AgentSessionService{}
+	return service.classifySessionLiveness(sessions, processes, nil, time.Now())
 }
 
 func processHasOpenFile(process *AgentProcess, sessionPath string) bool {

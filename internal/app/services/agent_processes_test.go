@@ -85,6 +85,12 @@ func TestMatchAgentProcessesToSessionsByJSONLPath(t *testing.T) {
 	if matched[0].OpenConfidence != models.AgentOpenConfidenceExact {
 		t.Fatalf("expected exact confidence, got %q", matched[0].OpenConfidence)
 	}
+	if matched[0].LivenessState != models.AgentSessionLivenessActive {
+		t.Fatalf("expected active liveness, got %q", matched[0].LivenessState)
+	}
+	if matched[0].LivenessSource != models.AgentSessionLivenessSourceExactFile {
+		t.Fatalf("expected exact-file source, got %q", matched[0].LivenessSource)
+	}
 }
 
 func TestMatchAgentProcessesToSessionsByCWDPrefersNewest(t *testing.T) {
@@ -118,22 +124,64 @@ func TestMatchAgentProcessesToSessionsByCWDPrefersNewest(t *testing.T) {
 		t.Fatalf("expected newest session to remain present, got %#v", matched)
 	}
 
-	var openSession *models.AgentSession
+	var suspectCount int
+	var suspectSession *models.AgentSession
 	for _, session := range matched {
-		if session.IsOpen {
-			openSession = session
-			break
+		if session.LivenessState == models.AgentSessionLivenessSuspect {
+			suspectCount++
+			if suspectSession == nil || session.LastActivity.After(suspectSession.LastActivity) {
+				suspectSession = session
+			}
 		}
 	}
-	if openSession == nil {
-		t.Fatalf("expected one session to be marked open, got %#v", matched)
+	if suspectCount != 1 || suspectSession == nil {
+		t.Fatalf("expected one recent session to be marked suspect, got %#v", matched)
 		return
 	}
-	if openSession.ID != "new" {
-		t.Fatalf("expected newest session to win cwd-only match, got %q", openSession.ID)
+	if suspectSession.ID != "new" {
+		t.Fatalf("expected newest session to win cwd-only heuristic, got %q", suspectSession.ID)
 	}
-	if openSession.OpenConfidence != models.AgentOpenConfidenceCWD {
-		t.Fatalf("expected cwd confidence, got %q", openSession.OpenConfidence)
+	if suspectSession.IsOpen {
+		t.Fatalf("expected cwd-only match to stay closed, got %#v", suspectSession)
+	}
+	if suspectSession.OpenConfidence != models.AgentOpenConfidenceCWD {
+		t.Fatalf("expected cwd confidence, got %q", suspectSession.OpenConfidence)
+	}
+	if suspectSession.LivenessSource != models.AgentSessionLivenessSourceCWDHeuristic {
+		t.Fatalf("expected cwd heuristic source, got %q", suspectSession.LivenessSource)
+	}
+	if suspectSession.LastObservedAt.IsZero() {
+		t.Fatalf("expected cwd heuristic match to refresh LastObservedAt, got %#v", suspectSession)
+	}
+}
+
+func TestMatchAgentProcessesToSessionsByCWDRefreshesLongRunningSession(t *testing.T) {
+	t.Parallel()
+
+	worktreePath := filepath.Clean("/tmp/worktree")
+	oldObservation := time.Now().Add(-2 * agentRecentThreshold)
+	processes := []*AgentProcess{{
+		PID:   303,
+		Agent: models.AgentKindClaude,
+		CWD:   worktreePath,
+	}}
+	sessions := []*models.AgentSession{{
+		ID:             "long-running",
+		Agent:          models.AgentKindClaude,
+		CWD:            worktreePath,
+		LastActivity:   time.Now().Add(-time.Hour),
+		LastObservedAt: oldObservation,
+	}}
+
+	matched := matchAgentProcessesToSessions(sessions, processes)
+	if len(matched) != 1 {
+		t.Fatalf("expected one matched session, got %#v", matched)
+	}
+	if matched[0].LivenessState != models.AgentSessionLivenessSuspect {
+		t.Fatalf("expected long-running cwd match to stay suspect, got %q", matched[0].LivenessState)
+	}
+	if !matched[0].LastObservedAt.After(oldObservation) {
+		t.Fatalf("expected LastObservedAt to refresh, old=%v new=%v", oldObservation, matched[0].LastObservedAt)
 	}
 }
 

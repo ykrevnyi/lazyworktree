@@ -72,15 +72,47 @@ const (
 	AgentOpenConfidenceCWD AgentOpenConfidence = "cwd"
 )
 
+// AgentSessionLiveness describes how strongly the session appears to still be alive.
+type AgentSessionLiveness string
+
+const (
+	// AgentSessionLivenessActive means there is current strong proof the session is live.
+	AgentSessionLivenessActive AgentSessionLiveness = "active"
+	// AgentSessionLivenessRecent means the session was observed recently but is not confirmed active.
+	AgentSessionLivenessRecent AgentSessionLiveness = "recent"
+	// AgentSessionLivenessSuspect means only heuristic evidence suggests the session may still be live.
+	AgentSessionLivenessSuspect AgentSessionLiveness = "suspect"
+	// AgentSessionLivenessInactive means there is no current evidence the session is live.
+	AgentSessionLivenessInactive AgentSessionLiveness = "inactive"
+)
+
+// AgentSessionLivenessSource identifies where the current liveness evidence came from.
+type AgentSessionLivenessSource string
+
+const (
+	// AgentSessionLivenessSourceNative means the agent itself exposed explicit liveness metadata.
+	AgentSessionLivenessSourceNative AgentSessionLivenessSource = "native"
+	// AgentSessionLivenessSourceRegistry means the persisted registry supplied the best recent evidence.
+	AgentSessionLivenessSourceRegistry AgentSessionLivenessSource = "registry"
+	// AgentSessionLivenessSourceExactFile means a live process has the transcript file open.
+	AgentSessionLivenessSourceExactFile AgentSessionLivenessSource = "exact_file"
+	// AgentSessionLivenessSourceCWDHeuristic means the match came only from a working-directory heuristic.
+	AgentSessionLivenessSourceCWDHeuristic AgentSessionLivenessSource = "cwd_heuristic"
+	// AgentSessionLivenessSourceNone means no evidence was available.
+	AgentSessionLivenessSourceNone AgentSessionLivenessSource = "none"
+)
+
 // AgentSession summarises a Claude or pi transcript attached to a worktree.
 type AgentSession struct {
 	ID             string
+	SessionKey     string
 	Agent          AgentKind
 	JSONLPath      string
 	CWD            string
 	Model          string
 	GitBranch      string
 	DisplayName    string
+	Title          string
 	LastPromptText string
 	LastReplyText  string
 	LastTargetPath string
@@ -91,8 +123,13 @@ type AgentSession struct {
 	LastToolAt     time.Time
 	LastSummaryAt  time.Time
 	LastActivity   time.Time
+	LastObservedAt time.Time
 	Status         AgentSessionStatus
 	Activity       AgentActivity
+	LivenessState  AgentSessionLiveness
+	LivenessSource AgentSessionLivenessSource
+	ResumeHint     string
+	SchemaVersion  string
 	IsOpen         bool
 	OpenConfidence AgentOpenConfidence
 }

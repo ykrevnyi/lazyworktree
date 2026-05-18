@@ -48,6 +48,7 @@ internal/app                 internal/cli
                 v
   internal/config / internal/git / internal/security
   internal/theme  / internal/multiplexer / internal/models
+                       / internal/app/services (agent session registry)
 ```
 
 ## Repository Map
