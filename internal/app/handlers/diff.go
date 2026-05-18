@@ -373,22 +373,24 @@ func (r *DiffRouter) showDiffNonInteractive(params WorktreeDiffParams) tea.Cmd {
 	fi
 
 	# Part 3: Untracked files (limited to %d)
-	untracked=$(git status --porcelain 2>/dev/null | grep '^?? ' | cut -d' ' -f2- || true)
-	if [ -n "$untracked" ]; then
-	  count=0
-	  max_count=%d
-	  total=$(echo "$untracked" | wc -l)
-	  while IFS= read -r file; do
-	    [ $count -ge $max_count ] && break
-	    echo "=== Untracked: $file ==="
-	    git diff --no-index /dev/null "$file" 2>/dev/null || true
-	    echo
+	count=0
+	shown=0
+	max_count=%d
+	while IFS= read -r -d '' record; do
+	  if [[ $record == '?? '* ]]; then
 	    count=$((count + 1))
-	  done <<< "$untracked"
-
-	  if [ $total -gt $max_count ]; then
-	    echo "[...showing $count of $total untracked files]"
+	    file=${record#?? }
+	    if [ $shown -lt $max_count ]; then
+	      echo "=== Untracked: $file ==="
+	      git diff --no-index /dev/null "$file" 2>/dev/null || true
+	      echo
+	      shown=$((shown + 1))
+	    fi
 	  fi
+	done < <(git status --porcelain -z 2>/dev/null || true)
+
+	if [ $count -gt $shown ]; then
+	  echo "[...showing $shown of $count untracked files]"
 	fi
 	`, maxUntracked, maxUntracked)
 

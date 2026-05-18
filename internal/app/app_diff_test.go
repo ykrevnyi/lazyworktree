@@ -160,6 +160,45 @@ func TestShowDiffInteractiveWithChanges(t *testing.T) {
 	}
 }
 
+func TestShowDiffNonInteractiveUsesPorcelainZForUntrackedFiles(t *testing.T) {
+	cfg := &config.AppConfig{
+		WorktreeDir:       t.TempDir(),
+		GitPager:          "delta",
+		MaxUntrackedDiffs: 5,
+		MaxDiffChars:      1000,
+	}
+	m := NewModel(cfg, "")
+	m.state.data.filteredWts = []*models.WorktreeInfo{{Path: cfg.WorktreeDir, Branch: featureBranch}}
+	m.state.data.selectedIndex = 0
+	m.state.data.statusFilesAll = []StatusFile{
+		{Filename: "my file.txt", Status: " ?", IsUntracked: true},
+	}
+
+	recorder := &commandRecorder{}
+	m.commandRunner = recorder.runner
+	m.execProcess = recorder.exec
+
+	cmd := m.showDiff()
+	if cmd == nil {
+		t.Fatal("expected a command when there are changes in non-interactive mode")
+	}
+
+	_ = cmd()
+
+	bashCmd, found := findCommand(recorder.execs, "bash")
+	if !found || len(bashCmd.args) < 2 || bashCmd.args[0] != "-c" {
+		t.Fatal("expected a bash -c command to be executed")
+	}
+
+	script := bashCmd.args[1]
+	if !strings.Contains(script, "git status --porcelain -z") {
+		t.Fatalf("expected porcelain -z untracked discovery, got %q", script)
+	}
+	if !strings.Contains(script, "read -r -d '' record") {
+		t.Fatalf("expected NUL-delimited record parsing, got %q", script)
+	}
+}
+
 func TestShowDiffVSCodeWithChanges(t *testing.T) {
 	cfg := &config.AppConfig{
 		WorktreeDir:       t.TempDir(),
