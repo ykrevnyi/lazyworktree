@@ -67,8 +67,30 @@ func IsRepoLocal(worktreeDir, mainWorktreePath string) bool {
 	if mainWorktreePath == "" || worktreeDir == "" {
 		return false
 	}
-	return strings.HasPrefix(filepath.Clean(worktreeDir)+string(filepath.Separator),
-		filepath.Clean(mainWorktreePath)+string(filepath.Separator))
+
+	var ok bool
+	worktreeDir, ok = normalizePathForComparison(worktreeDir)
+	if !ok {
+		return false
+	}
+	mainWorktreePath, ok = normalizePathForComparison(mainWorktreePath)
+	if !ok {
+		return false
+	}
+
+	return strings.HasPrefix(worktreeDir+string(filepath.Separator),
+		mainWorktreePath+string(filepath.Separator))
+}
+
+func normalizePathForComparison(path string) (string, bool) {
+	if filepath.IsAbs(path) {
+		return filepath.Clean(path), true
+	}
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return "", false
+	}
+	return abs, true
 }
 
 // resolveWorktreeBaseDir returns the parent directory for a new worktree.

@@ -359,6 +359,39 @@ func TestIsRepoLocal(t *testing.T) {
 	}
 }
 
+func TestIsRepoLocalWithRelativeRepoLocalDir(t *testing.T) {
+	tmpDir := t.TempDir()
+	mainWorktreePath := filepath.Join(tmpDir, "repo")
+	require.NoError(t, os.MkdirAll(mainWorktreePath, 0o750))
+	t.Chdir(mainWorktreePath)
+
+	assert.True(t, IsRepoLocal(".worktrees", mainWorktreePath))
+	assert.Equal(t, ".worktrees", resolveWorktreeBaseDir(".worktrees", mainWorktreePath, "org-myrepo"))
+}
+
+func TestIsRepoLocalWithRelativeDirOutsideRepo(t *testing.T) {
+	tmpDir := t.TempDir()
+	parentDir := filepath.Join(tmpDir, "parent")
+	mainWorktreePath := filepath.Join(parentDir, "repo")
+	require.NoError(t, os.MkdirAll(mainWorktreePath, 0o750))
+	t.Chdir(mainWorktreePath)
+
+	assert.False(t, IsRepoLocal("../shared-worktrees", mainWorktreePath))
+}
+
+func TestIsRepoLocalWithRelativeDirWhenWorkingDirUnavailable(t *testing.T) {
+	tmpDir := t.TempDir()
+	mainWorktreePath := filepath.Join(tmpDir, "repo")
+	require.NoError(t, os.MkdirAll(mainWorktreePath, 0o750))
+
+	missingDir := filepath.Join(tmpDir, "deleted-cwd")
+	require.NoError(t, os.MkdirAll(missingDir, 0o750))
+	t.Chdir(missingDir)
+	require.NoError(t, os.RemoveAll(missingDir))
+
+	assert.False(t, IsRepoLocal(".worktrees", mainWorktreePath))
+}
+
 func TestFindWorktreeByPathOrNameRepoLocal(t *testing.T) {
 	t.Parallel()
 
