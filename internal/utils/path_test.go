@@ -36,6 +36,11 @@ func TestExpandPath(t *testing.T) {
 			expected: filepath.Join(home, "worktrees"),
 		},
 		{
+			name:     "tilde username remains literal",
+			input:    "~other/worktrees",
+			expected: "~other/worktrees",
+		},
+		{
 			name:     "env var",
 			input:    "$LW_TEST_DIR/path",
 			expected: "/tmp/lw/path",

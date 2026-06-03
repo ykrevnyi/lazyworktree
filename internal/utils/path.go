@@ -8,7 +8,7 @@ import (
 
 // ExpandPath expands ~ and environment variables in a path.
 func ExpandPath(path string) (string, error) {
-	if strings.HasPrefix(path, "~") {
+	if path == "~" || strings.HasPrefix(path, "~/") {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return "", err
