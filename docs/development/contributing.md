@@ -3,7 +3,7 @@
 Thank you for considering a contribution to LazyWorktree. This guide covers the development workflow, conventions, and standards the project follows.
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> you want to build from source, run tests, submit changes, or understand the project's development practices.</p>
+  <p><strong>Refer to this page when:</strong> you want to build from source, run tests, submit changes, or understand the project's development practices.</p>
 </div>
 
 ## Prerequisites

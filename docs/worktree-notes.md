@@ -3,7 +3,7 @@
 Configure `worktree_note_script` to generate initial worktree notes when creating from a PR/MR or issue. The script receives the selected item's title and body on stdin and can produce multiline output.
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> you want to keep clear context per worktree and auto-generate starter notes from PRs or issues.</p>
+  <p><strong>Refer to this page when:</strong> you want to keep clear context per worktree and auto-generate starter notes from PRs or issues.</p>
 </div>
 
 ## Why notes matter

@@ -114,7 +114,7 @@ echo "$result" | jq '.exit_code'
 | `--help` | Human-readable reference only — do not parse |
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> you want to automate branch naming from PR/issue titles or generate implementation notes from descriptions.</p>
+  <p><strong>Refer to this page when:</strong> you want to automate branch naming from PR/issue titles or generate implementation notes from descriptions.</p>
 </div>
 
 ## Automatic Branch Names

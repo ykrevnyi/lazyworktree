@@ -1,7 +1,7 @@
 # FAQ
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> you have a quick question about LazyWorktree's behaviour or capabilities.</p>
+  <p><strong>Refer to this page when:</strong> you have a quick question about LazyWorktree's behaviour or capabilities.</p>
 </div>
 
 ## Do I need to use shell integration?

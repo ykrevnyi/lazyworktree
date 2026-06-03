@@ -3,7 +3,7 @@
 LazyWorktree can run custom commands inside OCI containers (Docker or Podman), giving each worktree an isolated, reproducible environment without requiring local toolchains.
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> you want to run custom commands inside Docker or Podman containers, with automatic worktree mounting.</p>
+  <p><strong>Refer to this page when:</strong> you want to run custom commands inside Docker or Podman containers, with automatic worktree mounting.</p>
 </div>
 
 ## Overview

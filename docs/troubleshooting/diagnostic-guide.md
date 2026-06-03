@@ -3,7 +3,7 @@
 A structured approach to diagnosing problems with LazyWorktree, from enabling debug output through to filing a useful bug report.
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> something is not working as expected and you want a systematic way to identify the cause.</p>
+  <p><strong>Refer to this page when:</strong> something is not working as expected and you want a systematic way to identify the cause.</p>
 </div>
 
 ## Step 1: Enable Debug Logging

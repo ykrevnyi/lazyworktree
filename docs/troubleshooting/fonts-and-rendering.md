@@ -3,7 +3,7 @@
 Use this guide when icons or symbols render incorrectly.
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> you see garbled characters, missing icons, or incorrect colours in the LazyWorktree interface.</p>
+  <p><strong>Refer to this page when:</strong> you see garbled characters, missing icons, or incorrect colours in the LazyWorktree interface.</p>
 </div>
 
 ## Symptom: Strange Characters in UI

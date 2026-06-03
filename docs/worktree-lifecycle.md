@@ -3,7 +3,7 @@
 Create a `.wt` file in your repository to run commands when creating or removing worktrees. Format inspired by [wt](https://github.com/taecontrol/wt).
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> you want to automate setup or cleanup tasks when worktrees are created or deleted.</p>
+  <p><strong>Refer to this page when:</strong> you want to automate setup or cleanup tasks when worktrees are created or deleted.</p>
 </div>
 
 ## `.wt` File Format

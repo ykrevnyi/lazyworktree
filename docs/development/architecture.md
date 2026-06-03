@@ -4,7 +4,7 @@ An overview of LazyWorktree's internal design for contributors who need to
 understand where behaviour lives and how the main subsystems fit together.
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> you want to understand package ownership, TUI versus CLI responsibilities, or where to make architectural changes.</p>
+  <p><strong>Refer to this page when:</strong> you want to understand package ownership, TUI versus CLI responsibilities, or where to make architectural changes.</p>
 </div>
 
 !!! note

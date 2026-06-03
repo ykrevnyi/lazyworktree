@@ -3,7 +3,7 @@
 The command palette is the fastest way to trigger actions without remembering every key.
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> you want discoverable, searchable commands with recent-item prioritisation.</p>
+  <p><strong>Refer to this page when:</strong> you want discoverable, searchable commands with recent-item prioritisation.</p>
 </div>
 
 ![Command palette](../assets/screenshot-palette.png)

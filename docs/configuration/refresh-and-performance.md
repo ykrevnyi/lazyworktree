@@ -3,7 +3,7 @@
 Balance freshness and responsiveness with these settings.
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> you want to tune update frequency, diff limits, or input behaviour.</p>
+  <p><strong>Refer to this page when:</strong> you want to tune update frequency, diff limits, or input behaviour.</p>
 </div>
 
 ## Worktree List Refresh

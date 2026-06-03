@@ -4,7 +4,7 @@ Worktree notes keep implementation context close to the worktree itself.
 Taskboard extracts markdown checkboxes into a grouped actionable view.
 
 <div class="mint-callout">
-  <p><strong>Use this page when:</strong> you want to track context, TODOs, and progress per worktree.</p>
+  <p><strong>Refer to this page when:</strong> you want to track context, TODOs, and progress per worktree.</p>
 </div>
 
 ## Notes Behaviour
