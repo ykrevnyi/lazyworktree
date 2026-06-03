@@ -49,9 +49,9 @@ This page is generated from `internal/config/config.go`. Run `make docs-sync` af
 | `custom_create_menus` | `[]object` | `none` | Custom create menu entries. |
 | `custom_themes` | `map[string]object` | `none` | Custom theme definitions. |
 | `debug_log` | `string` | `none` | Debug log file path. |
-| `agent_sessions` | `string` | `none` | See config.example.yaml for usage details. |
-| `layout_sizes` | `string` | `none` | See config.example.yaml for usage details. |
-| `worktree_note_type` | `string` | `none` | See config.example.yaml for usage details. |
+| `agent_sessions` | `object` | `none` | Custom base directories for finding AI agent transcripts. Supports `claude_root` and `pi_root` nested options. |
+| `layout_sizes` | `object` | `none` | Configurable baseline layout weights for panes (`worktrees`, `info`, `git_status`, `commit`, `agent_sessions`, `notes`). Relative weights are normalised at runtime. |
+| `worktree_note_type` | `enum(onejson\|splitted)` | `onejson` | Note storage format strategy. Use `onejson` (default) for a single shared JSON file, or `splitted` for individual markdown files with YAML frontmatter. |
 <!-- END GENERATED:config-reference -->
 
 For examples and grouped explanations, see:

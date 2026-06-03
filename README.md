@@ -5,7 +5,7 @@
 <img align="right" width="180" height="180" alt="logo" src="./website/assets/logo.png" />
 LazyWorktree is a terminal UI for managing Git worktrees with a keyboard-first workflow.
 
-It provides a easy way to work across multiple Git worktrees from one interface. From the current worktree, you can create, switch, remove, and run related operations without manually jumping between directories.
+It provides an easy way to work across multiple Git worktrees from one interface. From the current worktree, you can create, switch, remove, and run related operations without manually jumping between directories.
 
 Built with [Bubble Tea](https://github.com/charmbracelet/bubbletea), it shows the state of your worktrees clearly and integrates with common development tools, including tmux, zellij, and OCI runtimes such as Docker or Podman.
 

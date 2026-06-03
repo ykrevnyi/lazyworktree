@@ -402,6 +402,9 @@ func parseConfigKeys(path string) ([]configKeySpec, error) {
 		"keybindings":                  "map[string]map[string]string",
 		"custom_create_menus":          "[]object",
 		"custom_themes":                "map[string]object",
+		"worktree_note_type":           "enum(onejson|splitted)",
+		"agent_sessions":               "object",
+		"layout_sizes":                 "object",
 	}
 
 	descByKey := map[string]string{
@@ -449,6 +452,9 @@ func parseConfigKeys(path string) ([]configKeySpec, error) {
 		"keybindings":                  "Pane-scoped bindings to built-in palette action IDs. Use `universal` for all panes or a pane name for context-specific bindings (see docs/action-ids.md).",
 		"custom_create_menus":          "Custom create menu entries.",
 		"custom_themes":                "Custom theme definitions.",
+		"worktree_note_type":           "Note storage format strategy. Use `onejson` (default) for a single shared JSON file, or `splitted` for individual markdown files with YAML frontmatter.",
+		"agent_sessions":               "Custom base directories for finding AI agent transcripts. Supports `claude_root` and `pi_root` nested options.",
+		"layout_sizes":                 "Configurable baseline layout weights for panes (`worktrees`, `info`, `git_status`, `commit`, `agent_sessions`, `notes`). Relative weights are normalised at runtime.",
 	}
 
 	defaultByKey := map[string]string{
@@ -479,6 +485,7 @@ func parseConfigKeys(path string) ([]configKeySpec, error) {
 		"palette_mru_limit":          defaults["PaletteMRULimit"],
 		"custom_commands":            "universal: t, Z",
 		"git_pager_args":             "auto-matched delta syntax theme",
+		"worktree_note_type":         "onejson",
 	}
 
 	var specs []configKeySpec
