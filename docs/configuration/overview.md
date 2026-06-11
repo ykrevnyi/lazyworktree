@@ -2,9 +2,6 @@
 
 LazyWorktree supports layered configuration from defaults up to CLI overrides.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you need to understand where settings come from and how to apply them safely.</p>
-</div>
 
 ## Configuration Sources
 

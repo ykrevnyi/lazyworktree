@@ -2,9 +2,6 @@
 
 Create and manage multiple active branches in parallel without branch checkout churn.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you want the core lifecycle actions for worktrees, from creation to cleanup.</p>
-</div>
 
 ![LazyWorktree main interface](../assets/screenshot-main.png)
 

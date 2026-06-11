@@ -2,9 +2,6 @@
 
 LazyWorktree surfaces pull/merge request information and CI state directly in the status pane.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you need to inspect checks, view logs, and open CI context without leaving the terminal.</p>
-</div>
 
 ## Requirements
 

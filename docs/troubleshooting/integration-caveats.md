@@ -2,9 +2,6 @@
 
 Known caveats across shells, pagers, and command execution modes.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> commands, pagers, or multiplexer features behave unexpectedly in LazyWorktree.</p>
-</div>
 
 ## Shell Execution Mode Differences
 

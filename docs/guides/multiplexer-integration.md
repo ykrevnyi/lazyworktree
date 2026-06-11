@@ -2,17 +2,14 @@
 
 LazyWorktree can create and manage tmux or zellij sessions directly from the TUI, giving each worktree a dedicated terminal environment.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you want to pair worktrees with multiplexer sessions for isolated, reproducible terminal layouts.</p>
-</div>
 
 ## Overview
 
-Multiplexer integration enables you to:
+With multiplexer integration:
 
 - Create dedicated tmux or zellij sessions for each worktree
 - Define custom window/tab layouts with specific commands
-- Automatically switch to existing sessions or create new ones
+- Switch to existing sessions or create new ones
 - Manage sessions from the [command palette](../core/command-palette.md)
 
 Default keybindings: `t` for tmux, `Z` for zellij (configurable via [custom commands](../custom-commands.md)).

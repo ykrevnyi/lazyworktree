@@ -1,7 +1,7 @@
 # Getting Started
 
 <div class="lw-callout">
-  <p><strong>Quick path:</strong> install lazyworktree, open a repository, run <code>lazyworktree</code>, then press <code>Enter</code> to jump to the selected worktree path.</p>
+  <p><strong>Quick path:</strong> install lazyworktree, open a repository, run <code>lazyworktree</code>, then press <code>Enter</code> to jump to the selected worktree.</p>
 </div>
 
 ## First Run

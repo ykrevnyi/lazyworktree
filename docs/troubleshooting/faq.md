@@ -1,14 +1,11 @@
 # FAQ
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you have a quick question about LazyWorktree's behaviour or capabilities.</p>
-</div>
 
 ## Do I need to use shell integration?
 
 No. Shell helpers are entirely optional. LazyWorktree works as a standalone TUI without any shell integration.
 
-Shell integration makes `cd`-to-selected-worktree smoother by exporting the selected path back to your calling shell. Without it, you can still navigate worktrees, but switching your shell's working directory requires a manual `cd` after exiting. See [Shell Integration](../shell-integration.md) for setup instructions.
+Shell integration exports the selected path so you can `cd` directly. Without it, you can still navigate worktrees, but switching your shell's working directory requires a manual `cd` after exiting. See [Shell Integration](../shell-integration.md) for setup instructions.
 
 ## Can I keep one notes file across repositories?
 
@@ -18,7 +15,7 @@ Yes. Set `worktree_notes_path` to store all worktree notes in a single JSON file
 worktree_notes_path: ".lazyworktree/notes.json"
 ```
 
-When this is set, note keys are stored relative to `worktree_dir` rather than as absolute paths, making the file portable across machines. Commit the JSON file to share notes with your team.
+When this is set, note keys are stored relative to `worktree_dir` rather than as absolute paths, so the file stays portable across machines. Commit the JSON file to share notes with your team.
 
 ## Where are notes stored by default?
 
@@ -95,7 +92,7 @@ Yes. Set `disable_pr` to skip all GitHub/GitLab API calls:
 disable_pr: true
 ```
 
-This is useful for repositories where you do not use PRs, or to avoid API rate limits on large organisations.
+Use this on repositories without PRs, or to avoid API rate limits on large organisations.
 
 ## Where should I start debugging visual issues?
 

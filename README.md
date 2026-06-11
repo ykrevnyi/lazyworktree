@@ -5,9 +5,9 @@
 <img align="right" width="180" height="180" alt="logo" src="./website/assets/logo.png" />
 LazyWorktree is a terminal UI for managing Git worktrees with a keyboard-first workflow.
 
-It provides an easy way to work across multiple Git worktrees from one interface. From the current worktree, you can create, switch, remove, and run related operations without manually jumping between directories.
+Work across multiple Git worktrees from one interface. Create, switch, remove, and run operations without changing directories.
 
-Built with [Bubble Tea](https://github.com/charmbracelet/bubbletea), it shows the state of your worktrees clearly and integrates with common development tools, including tmux, zellij, and OCI runtimes such as Docker or Podman.
+Built with [Bubble Tea](https://github.com/charmbracelet/bubbletea), it shows worktree state and integrates with development tools, including tmux, zellij, and OCI runtimes such as Docker or Podman.
 
 Custom commands can be bound to keys or made available only from the command palette. To hide a command from key binding, prefix its config key with `_`.
 
@@ -26,7 +26,7 @@ _[You can see more screenshots here](https://chmouel.github.io/lazyworktree/#scr
 - Tmux and Zellij support - Automatically open worktrees in new tmux windows/panes or zellij tabs
 - Docker/Podman support - Run commands in Docker or Podman containers tied to the worktree
 - Custom commands - Set up custom shell commands in config, bind them to keys, show them in the palette.
-- Notes - Write markdown notes per worktree or tasks to track what you're working on
+- Notes - Markdown notes per worktree to track work in progress
 - Hooks - `.wt` files per worktree to automate setup and cleanup tasks
 - Customise worktree metadata - Press `e` in the worktree pane to edit the description, colour, notes, icon, and tags for the selected worktree.
 - Shell helpers - `cd "$(lazyworktree)"` shortcut and shell completion for bash, zsh, and fish (making it easy to jump to worktrees from the terminal)

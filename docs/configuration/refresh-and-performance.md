@@ -1,10 +1,6 @@
 # Refresh and Performance
 
-Balance freshness and responsiveness with these settings.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you want to tune update frequency, diff limits, or input behaviour.</p>
-</div>
 
 ## Worktree List Refresh
 
@@ -30,7 +26,7 @@ Repositories with many worktrees (20+) or large working trees may benefit from a
 refresh_interval: 15
 ```
 
-This reduces the frequency of `git worktree list` and status checks, which can be slow on repositories with extensive untracked or modified files.
+This reduces the frequency of `git worktree list` and status checks, which can be slow on repositories with many untracked or modified files.
 
 ### Sort modes
 
@@ -70,7 +66,7 @@ max_diff_chars: 50000     # Maximum total diff characters to render (default: 50
 - Setting either value to `0` disables that limit entirely.
 
 !!! warning
-    Setting `max_diff_chars: 0` on a repository with large generated files may cause noticeable rendering delays. If diffs feel sluggish, try lowering this value first.
+    Setting `max_diff_chars: 0` on a repository with large generated files causes rendering delays. If diffs feel sluggish, lower this value first.
 
 ### Tuning for slow diffs
 

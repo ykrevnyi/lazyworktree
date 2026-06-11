@@ -2,13 +2,10 @@
 
 LazyWorktree can run custom commands inside OCI containers (Docker or Podman), giving each worktree an isolated, reproducible environment without requiring local toolchains.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you want to run custom commands inside Docker or Podman containers, with automatic worktree mounting.</p>
-</div>
 
 ## Overview
 
-Container execution enables you to:
+With container execution:
 
 - Run builds and tests in isolated containers with pinned toolchain versions
 - Reproduce CI environments locally without installing dependencies
@@ -19,7 +16,7 @@ Container execution enables you to:
 
 ### Image Only
 
-Specify just an image to launch a container with the image's default entrypoint. The worktree is automatically mounted at `/workspace`.
+Specify an image to launch a container using its default entrypoint. The worktree mounts to `/workspace`.
 
 ```yaml
 custom_commands:
@@ -46,7 +43,7 @@ custom_commands:
 
 ### Image + Entrypoint
 
-Override the image's default entrypoint — useful for images that bundle multiple tools or need a specific shell:
+Override the image's default entrypoint — for images that bundle multiple tools or require a specific shell:
 
 ```yaml
 custom_commands:

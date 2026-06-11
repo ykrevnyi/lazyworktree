@@ -2,9 +2,6 @@
 
 Run repository-local commands when creating or removing worktrees.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you want repeatable project bootstrap and cleanup per worktree.</p>
-</div>
 
 ## `.wt` Example
 

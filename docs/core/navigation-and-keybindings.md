@@ -1,10 +1,6 @@
 # Navigation and Keybindings
 
-This page focuses on the TUI layout, movement, pane control, search, and command invocation.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you are learning daily navigation patterns and keyboard flow in the TUI.</p>
-</div>
 
 ## Interface Layout
 

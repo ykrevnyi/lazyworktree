@@ -2,21 +2,18 @@
 
 Configure `worktree_note_script` to generate initial worktree notes when creating from a PR/MR or issue. The script receives the selected item's title and body on stdin and can produce multiline output.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you want to keep clear context per worktree and auto-generate starter notes from PRs or issues.</p>
-</div>
 
 ## Why notes matter
 
-Worktree notes make it easy to remember context when switching between branches.
+Worktree notes keep context when switching between branches.
 
-A short note can capture:
+Notes record:
 
 - what this worktree is for
 - what has already been done
 - what should happen next
 
-This is especially useful when you return to a worktree after a few days, or when you are juggling multiple PRs in parallel.
+This matters most when returning after days away, or when several PRs are active at once.
 
 ## Setting notes manually
 

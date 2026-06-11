@@ -113,9 +113,6 @@ echo "$result" | jq '.exit_code'
 | `--json` flags | Parse command results programmatically |
 | `--help` | Human-readable reference only — do not parse |
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you want to automate branch naming from PR/issue titles or generate implementation notes from descriptions.</p>
-</div>
 
 ## Automatic Branch Names
 

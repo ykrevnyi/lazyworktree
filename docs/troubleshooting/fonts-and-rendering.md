@@ -1,10 +1,6 @@
 # Fonts and Rendering
 
-Use this guide when icons or symbols render incorrectly.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you see garbled characters, missing icons, or incorrect colours in the LazyWorktree interface.</p>
-</div>
 
 ## Symptom: Strange Characters in UI
 
@@ -12,7 +8,7 @@ If you see boxes, question marks, or garbled glyphs where icons should appear, y
 
 ### Quick fix
 
-Switch to plain-text icons immediately:
+Switch to plain-text icons for now:
 
 ```yaml
 icon_set: text
@@ -71,7 +67,7 @@ Some terminals require additional configuration for true colour:
 
 ## Tested Terminal Emulators
 
-The following terminals are known to work well with LazyWorktree's default icon and colour settings:
+These terminals work with LazyWorktree's default icon and colour settings:
 
 | Terminal | Icons | True colour | Notes |
 | --- | --- | --- | --- |

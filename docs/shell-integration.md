@@ -1,6 +1,6 @@
 # Shell Integration
 
-Shell helpers change directory to the selected worktree on exit. Optional but recommended.
+Shell helpers change directory to the selected worktree on exit. They are optional; the TUI works without them.
 
 ## Quick Usage
 
@@ -10,7 +10,7 @@ Without helper functions, use the simple command form in any POSIX-like shell:
 cd "$(lazyworktree)"
 ```
 
-With helper functions loaded, you can wrap this in a reusable shell command and preserve consistent behaviour across repositories.
+With helper functions loaded, you can wrap this in a reusable shell command that works across repositories.
 
 ## Shell Setup
 

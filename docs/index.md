@@ -2,10 +2,10 @@
 
 <div class="mint-hero">
   <p class="mint-kicker">LazyWorktree</p>
-  <p>Easy Git worktree management for the terminal. LazyWorktree helps you create isolated development environments, keep context per branch, and move quickly across parallel tasks.</p>
+  <p>Git worktree management for the terminal. Create, switch, and remove worktrees without leaving your editor context.</p>
 </div>
 
-- **[Quickstart](getting-started.md)** — Get running in minutes and jump directly to selected worktrees from your shell.
+- **[Quickstart](getting-started.md)** — Get running and jump to selected worktrees from your shell.
 - **[Installation](installation.md)** — Install with Homebrew, Arch Linux AUR, or from source.
 
 ## Key Features
@@ -13,7 +13,7 @@
 ### Worktree Management
 
 - Create, rename, remove, absorb, and prune worktrees.
-- Switch quickly without branch checkout churn.
+- Switch without branch checkout churn.
 - Keep each task isolated with its own filesystem context.
 
 ### Development Workflow

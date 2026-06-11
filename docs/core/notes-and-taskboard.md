@@ -3,9 +3,6 @@
 Worktree notes keep implementation context close to the worktree itself.
 Taskboard extracts markdown checkboxes into a grouped actionable view.
 
-<div class="mint-callout">
-  <p><strong>Refer to this page when:</strong> you want to track context, TODOs, and progress per worktree.</p>
-</div>
 
 ## Notes Behaviour
 
@@ -19,11 +16,11 @@ Editor supports save, external editor handoff, newline insertion, and cancel.
 
 ### Description
 
-Use the command palette (`:`  or `Ctrl+P`) and select **Set worktree description** to assign a short human-readable label to a worktree. When set, the description replaces the directory name in the worktree list for display purposes. This is particularly useful for long directory names such as `pr-2423-feat-implement-graphql-batch-fetching`. Setting an empty description clears it and restores the directory name. The description is also included in filter and search matching, and is stored as part of the worktree note metadata (JSON or frontmatter).
+Use the command palette (`:`  or `Ctrl+P`) and select **Set worktree description** to assign a short human-readable label to a worktree. When set, the description replaces the directory name in the worktree list for display purposes. This helps with long directory names such as `pr-2423-feat-implement-graphql-batch-fetching`. Setting an empty description clears it and restores the directory name. The description is also included in filter and search matching, and is stored as part of the worktree note metadata (JSON or frontmatter).
 
 ### Tags
 
-Use the command palette (`:`, `F1`, or `Ctrl+P`) and select **Set worktree tags** to assign labels to a worktree. You may type tags directly as a comma-separated list (for example `bug,frontend,urgent`) and toggle existing labels from the same editor when you want to mix reuse with new tags. Tags display as coloured badges (using guillemet brackets, «tag») immediately after the worktree name and in the Info pane when present, with each tag receiving a deterministic colour from the theme palette. Setting an empty value clears all tags. Use **Browse by worktree tags** in the command palette to see all existing labels with counts and apply an exact `tag:<name>` filter without remembering the tag text first. Tags are stored alongside other worktree note metadata (JSON or frontmatter) and are included in filter and search matching, making it straightforward to locate worktrees by label.
+Use the command palette (`:`, `F1`, or `Ctrl+P`) and select **Set worktree tags** to assign labels to a worktree. Type tags as a comma-separated list (for example `bug,frontend,urgent`) and toggle existing labels from the same editor when you want to mix reuse with new tags. Tags display as coloured badges (using guillemet brackets, «tag») immediately after the worktree name and in the Info pane when present, with each tag receiving a deterministic colour from the theme palette. Setting an empty value clears all tags. Use **Browse by worktree tags** in the command palette to see all existing labels with counts and apply an exact `tag:<name>` filter without remembering the tag text first. Tags are stored alongside other worktree note metadata (JSON or frontmatter) and are included in filter and search matching, to find worktrees by label.
 
 When a note exists for a worktree, a note marker appears in the worktree list and the Notes pane (pane 5) becomes visible.
 
