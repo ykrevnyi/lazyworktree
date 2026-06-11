@@ -115,6 +115,7 @@ The following variables are set when the script executes:
 | `LAZYWORKTREE_NUMBER` | PR or issue number | `42` |
 | `LAZYWORKTREE_TITLE` | Title of the PR or issue | `Add session management` |
 | `LAZYWORKTREE_URL` | URL of the PR or issue | `https://github.com/org/repo/pull/42` |
+| `LAZYWORKTREE_DESCRIPTION` | Body/description of the PR or issue | `Adds session management…` |
 
 You can use these variables to vary behaviour by context — for example, generating more detailed notes for issues than for PRs.
 

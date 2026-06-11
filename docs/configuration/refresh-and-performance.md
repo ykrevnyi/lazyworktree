@@ -8,7 +8,7 @@ Control how and when the worktree list updates.
 
 ```yaml
 auto_refresh: true        # Enable background refresh (default: true)
-refresh_interval: 5       # Seconds between refreshes (default: 5)
+refresh_interval: 10      # Seconds between refreshes (default: 10)
 sort_mode: switched       # Sort order: switched, active, or path
 ```
 
@@ -39,7 +39,7 @@ This reduces the frequency of `git worktree list` and status checks, which can b
 ## CI Refresh
 
 ```yaml
-ci_auto_refresh: true     # Periodic CI status refresh (default: true)
+ci_auto_refresh: true     # Periodic CI status refresh (default: false)
 ```
 
 When enabled, LazyWorktree polls the GitHub or GitLab API for CI check status at regular intervals. Only worktrees with pending or running CI jobs are refreshed — completed checks are not re-fetched until the cache expires.

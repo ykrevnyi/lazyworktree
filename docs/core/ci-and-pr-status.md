@@ -46,10 +46,10 @@ Press `Ctrl+r` to restart the selected CI job. This is currently supported for G
 
 ## Auto-Refresh
 
-CI status refreshes automatically at a configurable interval. You can also trigger a manual refresh. Configure the refresh interval via:
+CI status is fetched lazily and cached for 30 seconds. To enable periodic background refresh, set:
 
 ```yaml
-ci_refresh_interval: 60  # seconds
+ci_auto_refresh: true  # default: false
 ```
 
 ## PR/MR Integration
