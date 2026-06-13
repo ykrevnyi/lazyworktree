@@ -222,7 +222,7 @@ func TestFetchIssueGitLab(t *testing.T) {
 
 func TestFetchPRGitLab(t *testing.T) {
 	stub := "#!/bin/sh\n" +
-		"if [ \"$1\" = \"api\" ] && [ \"$2\" = \"merge_requests/123\" ]; then\n" +
+		"if [ \"$1\" = \"api\" ] && [ \"$2\" = \"projects/:id/merge_requests/123\" ]; then\n" +
 		"  echo '{\"iid\":123,\"state\":\"opened\",\"title\":\"Test MR\",\"description\":\"Test description\",\"web_url\":\"https://gitlab.com/repo/merge_requests/123\",\"source_branch\":\"feature\",\"target_branch\":\"main\",\"author\":{\"username\":\"testuser\",\"name\":\"Test User\",\"bot\":false},\"draft\":false}'\n" +
 		"  exit 0\n" +
 		"fi\n" +

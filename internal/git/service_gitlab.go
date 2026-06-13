@@ -186,7 +186,7 @@ func (s *Service) fetchGitLabOpenPRs(ctx context.Context) ([]*models.PRInfo, err
 
 // fetchGitLabPR fetches a single PR (merge request) by number from GitLab.
 func (s *Service) fetchGitLabPR(ctx context.Context, prNumber int) (*models.PRInfo, error) {
-	prRaw := s.RunGit(ctx, []string{"glab", "api", fmt.Sprintf("merge_requests/%d", prNumber)}, "", []int{0}, false, false)
+	prRaw := s.RunGit(ctx, []string{"glab", "api", fmt.Sprintf("projects/:id/merge_requests/%d", prNumber)}, "", []int{0}, false, false)
 	if prRaw == "" {
 		return nil, fmt.Errorf("PR #%d not found", prNumber)
 	}
